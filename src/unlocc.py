@@ -1,28 +1,34 @@
-import keyboard
-from threading import Timer
+# import keyboard
+# from threading import Timer
 
 
-masterTimer = None
+# masterTimer = None
 
 
-def resetTimer():
-    global masterTimer
-    masterTimer.cancel()
-    masterTimer = None
-    print('reset the timer')
+# def resetTimer():
+#     global masterTimer
+#     masterTimer.cancel()
+#     masterTimer = None
+#     print('reset the timer')
 
 
-def handleMaster(key):
-    global masterTimer
-    if masterTimer is not None:
-        print(masterTimer)
-        keyboard.send(key.name)
-    masterTimer = Timer(0.3, resetTimer)
-    masterTimer.start()
+# def handleMaster(key):
+#     global masterTimer
+#     if masterTimer is not None:
+#         print(masterTimer)
+#         keyboard.send(key.name)
+#     masterTimer = Timer(0.3, resetTimer)
+#     masterTimer.start()
 
 
-keyboard.on_press_key(key='caps lock', callback=handleMaster, suppress=True)
+# keyboard.on_press_key(key='caps lock', callback=handleMaster, suppress=True)
 
-# keyboard.on_press(callback=lambda key: print('pressed ' + key.name))
+# # keyboard.on_press(callback=lambda key: print('pressed ' + key.name))
 
-input('hello')
+# input('hello')
+from keybrain import KeyBrain
+
+capsbrain = KeyBrain('esc')
+
+while (True):
+    x = 1
