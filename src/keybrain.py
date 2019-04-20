@@ -1,6 +1,5 @@
 import keyboard
 import time
-import sys
 
 
 class KeyBrain:
@@ -10,13 +9,17 @@ class KeyBrain:
     lastHit = 0                 # time at which master key was last hit
     timeout = 0.3               # second timeout between presses for double
     lastType = keyboard.KEY_UP  # type of last keypress
+    recordedEvents = []
+    hook = None
 
     def __init__(self, master):
         self.master = master
+
+    def init_master(self):
         keyboard.on_press_key(
-            key=master, callback=self.keypress, suppress=True)
+            key=self.master, callback=self.keypress, suppress=True)
         keyboard.on_release_key(
-            key=master, callback=self.keypress, suppress=True)
+            key=self.master, callback=self.keypress, suppress=True)
 
     def keypress(self, event):
         double = (time.time() - self.lastHit) < self.timeout
@@ -36,6 +39,18 @@ class KeyBrain:
 
     def deactivate(self):
         self.active = False
+        keyboard.unhook_all()
+        self.init_master()
+        for event in self.recordedEvents:
+            print(event)
 
     def activate(self):
         self.active = True
+        self.hook = keyboard.hook(callback=self.record, suppress=True)
+
+    def record(self, event):
+        if event.name == self.master:
+            self.deactivate()
+            keyboard.send(self.master)
+        else:
+            self.recordedEvents.append(event)
