@@ -8,7 +8,7 @@ class KeyBrain:
     master = 'caps lock'            # master key identity
     lastHit = 0                     # time at which master key was last hit
     timeout = 0.3                   # second timeout between presses for double
-    lastType = keyboard.KEY_UP      # type of last keypress
+    recordMode = False
     recordedEvents = []
     hook = None
 
@@ -23,17 +23,13 @@ class KeyBrain:
             key=self.master, callback=self.keypress, suppress=True)
 
     def keypress(self, event):
-        double = (time.time() - self.lastHit) < self.timeout
-
-        if event.event_type == self.lastType:
-            return None
-        else:
-            self.lastType = event.event_type
+        down = event.event_type == keyboard.KEY_DOWN
+        double = down and ((time.time() - self.lastHit) < self.timeout)
 
         if event.event_type == keyboard.KEY_DOWN:
             print(time.time() - self.lastHit)
 
-        if double and event.event_type == keyboard.KEY_DOWN:
+        if double:
             print('sending a turnon')
             self.deactivate()
             keyboard.send(self.master)
@@ -48,21 +44,21 @@ class KeyBrain:
             self.active = False
             keyboard.unhook_all()
             self.init_master()
-            for event in self.recordedEvents:
-                print(event)
-                # self.active = self.active
             self.recordedEvents = []
-            print('deactivated')
 
     def activate(self):
         if not self.active:
             self.recordedEvents = []
             self.active = True
-            self.hook = keyboard.hook(callback=self.record, suppress=True)
-            print('activated')
+
+            callback = self.record if self.recordMode else self.receive
+            self.hook = keyboard.hook(callback=callback, suppress=True)
 
     def record(self, event):
         if event.name == self.master:
             self.deactivate()
         elif event.event_type == keyboard.KEY_DOWN:
             self.recordedEvents.append(event)
+
+    def receive(self, event):
+        keyboard.send(event.name)
