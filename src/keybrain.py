@@ -61,4 +61,7 @@ class KeyBrain:
             self.recordedEvents.append(event)
 
     def receive(self, event):
-        keyboard.send(event.name)
+        if event.name == self.master:
+            self.deactivate()
+        else:
+            keyboard.send(event.name)
