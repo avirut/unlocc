@@ -9,7 +9,7 @@ class KeyBrain:
     lastType = keyboard.KEY_UP
     lastHit = 0                     # time at which master key was last hit
     timeout = 0.3                   # second timeout between presses for double
-    recordMode = False
+    recordMode = True
     recordedEvents = []
     hook = None
     swaps = {}
@@ -90,3 +90,6 @@ class KeyBrain:
             keyboard.write(self.swaps[event.name])
         else:
             keyboard.write(event.name)
+
+    def shutdown(self):
+        keyboard.unhook_all()
