@@ -93,3 +93,7 @@ class KeyBrain:
 
     def shutdown(self):
         keyboard.unhook_all()
+
+
+if __name__ == '__main__':
+    keybrain = KeyBrain('caps lock')
