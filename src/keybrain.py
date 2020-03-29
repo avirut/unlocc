@@ -9,7 +9,7 @@ class KeyBrain:
     lastType = keyboard.KEY_UP
     lastHit = 0                     # time at which master key was last hit
     timeout = 0.3                   # second timeout between presses for double
-    recordMode = True
+    recordMode = False
     recordedEvents = []
     hook = None
     swaps = {}
@@ -18,6 +18,7 @@ class KeyBrain:
         self.master = master
         self.init_master()
         self.swaps['a'] = 'á'
+        self.swaps['shrug'] = '¯\\_(ツ)_/¯'
 
     def init_master(self):
         keyboard.hook_key(
@@ -46,15 +47,17 @@ class KeyBrain:
             self.deactivate()
 
     def deactivate(self):
-        if self.recordMode:
-            typed = ''
-            for event in self.recordedEvents:
-                typed += event.name
-            if typed in self.swaps:
-                keyboard.write(self.swaps[typed])
         if self.active:
             self.active = False
             keyboard.unhook_all()
+
+            if self.recordMode:
+                typed = ''
+                for event in self.recordedEvents:
+                    typed += event.name
+                if typed in self.swaps:
+                    keyboard.write(self.swaps[typed])
+
             self.init_master()
             self.recordedEvents = []
 
