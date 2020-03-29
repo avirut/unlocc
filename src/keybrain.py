@@ -6,25 +6,31 @@ class KeyBrain:
 
     active = False                  # whether unlocc is active or not
     master = 'caps lock'            # master key identity
+    lastType = keyboard.KEY_UP
     lastHit = 0                     # time at which master key was last hit
     timeout = 0.3                   # second timeout between presses for double
-    recordMode = False
+    recordMode = True
     recordedEvents = []
     hook = None
+    swaps = {}
 
     def __init__(self, master):
         self.master = master
         self.init_master()
+        self.swaps['a'] = 'á'
 
     def init_master(self):
-        keyboard.on_press_key(
-            key=self.master, callback=self.keypress, suppress=True)
-        keyboard.on_release_key(
-            key=self.master, callback=self.keypress, suppress=True)
+        keyboard.hook_key(
+            key=self.master, callback=self.masterpress, suppress=True)
 
-    def keypress(self, event):
+    def masterpress(self, event):
         down = event.event_type == keyboard.KEY_DOWN
         double = down and ((time.time() - self.lastHit) < self.timeout)
+
+        if down and self.lastType == keyboard.KEY_DOWN:
+            return
+
+        self.lastType = event.event_type
 
         if event.event_type == keyboard.KEY_DOWN:
             print(time.time() - self.lastHit)
@@ -40,6 +46,12 @@ class KeyBrain:
             self.deactivate()
 
     def deactivate(self):
+        if self.recordMode:
+            typed = ''
+            for event in self.recordedEvents:
+                typed += event.name
+            if typed in self.swaps:
+                keyboard.write(self.swaps[typed])
         if self.active:
             self.active = False
             keyboard.unhook_all()
@@ -56,12 +68,22 @@ class KeyBrain:
 
     def record(self, event):
         if event.name == self.master:
-            self.deactivate()
+            if event.event_type == keyboard.KEY_UP:
+                self.lastType = event.event_type
+                self.deactivate()
+            else:
+                return
         elif event.event_type == keyboard.KEY_DOWN:
             self.recordedEvents.append(event)
 
     def receive(self, event):
         if event.name == self.master:
-            self.deactivate()
+            if event.event_type == keyboard.KEY_UP:
+                self.lastType = event.event_type
+                self.deactivate()
+            else:
+                return
+        elif event.name in self.swaps:
+            keyboard.write(self.swaps[event.name])
         else:
-            keyboard.send(event.name)
+            keyboard.write(event.name)
