@@ -37,18 +37,21 @@ class Unlocc:
 
     def create_image(self):
         # Generate an image and draw a pattern
-        width = 20
-        height = 20
-        color1 = '#000000ff'
-        color2 = '#0000ff00'
-        self.image = Image.new('RGB', (width, height), color1)
+        width = 40
+        height = 40
+        transparent = (0, 0, 0, 0)
+        prim = (235, 65, 50, 255)
+        white = (255, 255, 255, 255)
+        self.image = Image.new('RGBA', (width, height), transparent)
         dc = ImageDraw.Draw(self.image)
         dc.rectangle(
             (width // 2, 0, width, height // 2),
-            fill=color2)
+            fill=prim)
         dc.rectangle(
             (0, height // 2, width // 2, height),
-            fill=color2)
+            fill=prim)
+        dc.rectangle((width // 6, height // 6, width // 6 * 5 + 4, height // 6 * 5 + 4),
+                     fill=None, outline=white, width=5)
 
     def load_config(self):
         try:
@@ -66,10 +69,11 @@ class Unlocc:
         if self.confGUI is not None:
             del self.confGUI
         self.confGUI = GUI()
-        guiThread = threading.Thread(target=self.confGUI.launch)
-        guiThread.setDaemon(True)
-        guiThread.start()
-        guiThread.join()
+        self.confGUI.launch()
+        # guiThread = threading.Thread(target=self.confGUI.launch)
+        # guiThread.setDaemon(True)
+        # guiThread.start()
+        # guiThread.join()
         print('past')
         self.load_config()
         self.keybrain = KeyBrain(self.masterKey, self.recordMode, self.swaps)
@@ -93,7 +97,7 @@ class Unlocc:
             self.keybrain.shutdown()
         if self.tray is not None:
             self.tray.stop()
-        sys.exit()
+        sys.exit(0)
 
     def create_menu(self):
         self.menu = pystray.Menu(

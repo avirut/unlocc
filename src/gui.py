@@ -56,7 +56,7 @@ class GUI:
         self.drawSwaps()
 
         self.window.protocol("WM_DELETE_WINDOW", self.onClose)
-
+        self.window.after(100, lambda: self.window.focus_force())
         self.window.mainloop()
         self.window.quit()
         return 1
