@@ -52,6 +52,7 @@ class Unlocc:
             fill=prim)
         dc.rectangle((width // 6, height // 6, width // 6 * 5 + 4, height // 6 * 5 + 4),
                      fill=None, outline=white, width=5)
+        self.image.save('logo.ico')
 
     def load_config(self):
         try:

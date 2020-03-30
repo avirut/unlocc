@@ -21,6 +21,8 @@ class GUI:
 
     def launch(self):
         self.window = Tk('Unlocc Configuration')
+        self.window.title('Unlocc Configuration')
+        self.window.iconbitmap('logo.ico')
         self.window.geometry('400x400')
 
         self.masterKey = StringVar(self.window, 'Unset')
