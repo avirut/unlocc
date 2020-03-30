@@ -14,11 +14,11 @@ class KeyBrain:
     hook = None
     swaps = {}
 
-    def __init__(self, master):
+    def __init__(self, master, recordmode, swaps):
         self.master = master
+        self.recordMode = recordmode
+        self.swaps = swaps
         self.init_master()
-        self.swaps['a'] = 'á'
-        self.swaps['shrug'] = '¯\\_(ツ)_/¯'
 
     def init_master(self):
         keyboard.hook_key(

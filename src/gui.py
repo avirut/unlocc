@@ -1,7 +1,7 @@
 from tkinter import *
 import json
 import keyboard
-from widgets import ScrollFrame
+from widgets import ScrollFrame, ToolTip
 
 
 class GUI:
@@ -22,7 +22,10 @@ class GUI:
         self.window = Tk('Unlocc Configuration')
         self.window.geometry('400x400')
 
-        savebtn = Button(master=self.window, text='Save', command=self.writeConfig)
+        self.masterKey = StringVar(self.window, 'Unset')
+        self.recordMode = BooleanVar(self.window, False)
+
+        savebtn = Button(master=self.window, text='Manual Save', command=self.writeConfig)
         savebtn.grid(row=0, column=0, columnspan=2)
 
         masterlbl = Label(self.window, text='Master Key')
@@ -36,6 +39,12 @@ class GUI:
             self.window, text='Record Mode', variable=self.recordMode, onvalue=True, offvalue=False)
         modebox.grid(row=2, column=0, columnspan=2)
 
+        modetip = ToolTip(modebox)
+        modetiptext = 'Record mode allows multicharacter bindings, but only inserts text on release of master key.'
+        modetiptext += '\nWith record mode disabled, only single character bindings will work.'
+        modebox.bind('<Enter>', lambda event, text=modetiptext: modetip.showtip(text))
+        modebox.bind('<Leave>', lambda event: modetip.hidetip())
+
         self.swapframe = ScrollFrame(self.window)
         self.swapframe.grid(row=3, column=0, columnspan=2)
 
@@ -44,7 +53,11 @@ class GUI:
 
         self.readConfig()
         self.drawSwaps()
+
+        self.window.protocol("WM_DELETE_WINDOW", self.onClose)
+
         self.window.mainloop()
+        return 1
 
     def setMasterHook(self):
         keyboard.hook(callback=self.setMaster, suppress=True)
@@ -54,13 +67,20 @@ class GUI:
         keyboard.unhook_all()
 
     def drawSwaps(self):
+        if (self.swapframe is not None):
+            self.swapframe.destroy()
+            self.swapframe = ScrollFrame(self.window)
+            self.swapframe.grid(row=3, column=0, columnspan=2)
+
         for i in range(len(self.tkkeys)):
-            ind = Label(self.swapframe.viewPort, text="%s" % i, width=3, borderwidth="1", relief="solid")
-            ind.grid(row=row, column=0)
+            ind = Label(self.swapframe.viewPort, text=str(i+1), width=3, borderwidth="1", relief="solid")
+            ind.grid(row=i, column=0)
             keyentry = Entry(self.swapframe.viewPort, textvariable=self.tkkeys[i])
             valentry = Entry(self.swapframe.viewPort, textvariable=self.tkvals[i])
+            delbtn = Button(self.swapframe.viewPort, text='Delete', command=lambda ind=i: self.deleteSwap(ind))
             keyentry.grid(row=i, column=1)
             valentry.grid(row=i, column=2)
+            delbtn.grid(row=i, column=3)
 
     def addSwap(self):
         key = StringVar(self.swapframe.viewPort)
@@ -69,11 +89,14 @@ class GUI:
         self.tkvals.append(val)
         keyentry = Entry(self.swapframe.viewPort, textvariable=key)
         valentry = Entry(self.swapframe.viewPort, textvariable=val)
-        ind = len(self.tkkeys)
-        indlbl = Label(self.swapframe.viewPort, text="%s" % ind, width=3, borderwidth="1", relief="solid")
-        indlbl.grid(row=ind, column=0)
-        keyentry.grid(row=ind, column=1)
-        valentry.grid(row=ind, column=2)
+
+        self.drawSwaps()
+
+    def deleteSwap(self, ind):
+        print('popping', ind)
+        self.tkkeys.pop(ind)
+        self.tkvals.pop(ind)
+        self.drawSwaps()
 
     def writeConfig(self):
         self.swaps = {self.tkkeys[i].get(): self.tkvals[i].get() for i in range(len(self.tkkeys))}
@@ -90,10 +113,13 @@ class GUI:
             print('Config Read Failed')
             return
         inp = json.loads(file.read())
-        self.masterKey = StringVar(self.window, 'Unset')
-        self.recordMode = BooleanVar(self.window, False)
         self.masterKey.set(inp[0])
         self.recordMode.set(inp[1])
         self.swaps = inp[2]
         self.tkkeys = [StringVar(self.swapframe, key) for key in list(self.swaps)]
         self.tkvals = [StringVar(self.swapframe, val) for val in list(self.swaps.values())]
+
+    def onClose(self):
+        self.writeConfig()
+        self.window.destroy()
+        self.window.quit()
