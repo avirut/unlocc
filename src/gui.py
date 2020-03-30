@@ -1,7 +1,8 @@
+from widgets import ScrollFrame, ToolTip
+
 from tkinter import *
 import json
 import keyboard
-from widgets import ScrollFrame, ToolTip
 
 
 class GUI:
@@ -57,6 +58,7 @@ class GUI:
         self.window.protocol("WM_DELETE_WINDOW", self.onClose)
 
         self.window.mainloop()
+        self.window.quit()
         return 1
 
     def setMasterHook(self):
@@ -122,4 +124,3 @@ class GUI:
     def onClose(self):
         self.writeConfig()
         self.window.destroy()
-        self.window.quit()

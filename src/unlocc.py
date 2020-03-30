@@ -13,6 +13,7 @@ class Unlocc:
     enabled = True
     keybrain = None
     tray = pystray.Icon('Unlocc')
+    filepath = 'config.ini'
     confGUI = None
     image = None
     menu = None
@@ -56,8 +57,8 @@ class Unlocc:
             print('Config Read Failed')
             return
         inp = json.loads(file.read())
-        self.masterKey.set(inp[0])
-        self.recordMode.set(inp[1])
+        self.masterKey = inp[0]
+        self.recordMode = inp[1]
         self.swaps = inp[2]
 
     def launch_settings(self):
